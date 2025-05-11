@@ -2,14 +2,12 @@
   "name": "galileu",
   "version": "0.1.0",
   "private": true,
-
-
   "homepage": "https://github.com/jhwrdan109/galileuquasefinal",
   "scripts": {
     "dev": "next dev --turbopack",
     "predeploy": "set \"CI=false\" && npm run build",
-   "deploy": "gh-pages -d build", 
-    "build": "next build && @netlify/next",
+    "deploy": "gh-pages -d build", 
+    "build": "next build",
     "start": "next start",
     "lint": "eslint ."
   },
@@ -42,8 +40,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
-      "@typescript-eslint/no-explicit-any": ["off"],
-
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "5.8.3"

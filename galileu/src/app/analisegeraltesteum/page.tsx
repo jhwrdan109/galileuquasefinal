@@ -17,24 +17,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const InfoCard = ({
-  title,
-  value,
-  unit,
-}: {
-  title: string;
-  value: number | null;
-  unit: string;
-}) => (
-  <div className="p-6 bg-white rounded-lg shadow-lg text-center">
-    <h4 className="text-xl font-semibold text-black">{title}</h4>
-    <p className="text-2xl font-bold text-black">
-      {value !== null ? `${value.toFixed(2)} ${unit}` : "Carregando..."}
-    </p>
-  </div>
-);
 
 const ExplicacaoGalileu: React.FC<{
+  
   angulo: number | null;
   forcaPeso: number | null;
   forcaNormal: number | null;
@@ -60,6 +45,7 @@ const ExplicacaoGalileu: React.FC<{
   tempo
 }) => {
   const [explicando, setExplicando] = useState(false);
+
   const [textoAtual, setTextoAtual] = useState("");
   const [indiceExplicacao, setIndiceExplicacao] = useState(0);
   const [tooltipVisivel, setTooltipVisivel] = useState<string | null>(null);
@@ -309,6 +295,8 @@ const ExplicacaoGalileu: React.FC<{
 
 const AnaliseSimulacao: React.FC = () => {
   const router = useRouter();
+    const [loadingData, setLoadingData] = useState(false);
+
   const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [simulationStarted, setSimulationStarted] = useState(false);
@@ -517,54 +505,82 @@ const AnaliseSimulacao: React.FC = () => {
   };
 
   const iniciarSimulacao = () => {
-    if (simulationStarted) return;
+  if (simulationStarted) return;
 
-    const database = getDatabase(app);
+  const database = getDatabase(app);
+  
+  const simulacoesRef = ref(database, "simulacoes");
+  const novaSimulacaoRef = push(simulacoesRef);
+  const novoSimulacaoId = novaSimulacaoRef.key;
+  
+  const timestampInicio = new Date().toISOString();
+  
+  const liberarRef = ref(database, "sensor/liberar");
+  
+  // Definir o estado de carregamento como verdadeiro
+  setLoadingData(true);
     
-    const simulacoesRef = ref(database, "simulacoes");
-    const novaSimulacaoRef = push(simulacoesRef);
-    const novoSimulacaoId = novaSimulacaoRef.key;
-    
-    const timestampInicio = new Date().toISOString();
-    
-    const liberarRef = ref(database, "sensor/liberar");
-      
-    set(novaSimulacaoRef, {
-      userName,
-      timestamp: timestampInicio,
-      status: "iniciada",
-      dados: {
-        distancia: 0,
-        angulo: 0,
-        velocidade: 0,
-        px: 0,
-        py: 0,
-        tempo: 0,
-        aceleracao: 0,
-        forcaPeso: 0,
-        forcaNormal: 0,
-        forcaAtrito: 0,
-        forcaResultante: 0
-      }
+  set(novaSimulacaoRef, {
+    userName,
+    timestamp: timestampInicio,
+    status: "iniciada",
+    dados: {
+      distancia: 0,
+      angulo: 0,
+      velocidade: 0,
+      px: 0,
+      py: 0,
+      tempo: 0,
+      aceleracao: 0,
+      forcaPeso: 0,
+      forcaNormal: 0,
+      forcaAtrito: 0,
+      forcaResultante: 0
+    }
+  })
+    .then(() => {
+      return set(liberarRef, true); // Liberar imediatamente
     })
-      .then(() => {
-        return set(liberarRef, true);
-      })
-      .then(() => {
-        setSimulacaoId(novoSimulacaoId);
-        setSimulationStarted(true);
-        
-        const graficoRef = ref(database, "sensor/dadosGrafico");
-        onValue(graficoRef, (snap) => {
-          if (!snap.exists() || !Array.isArray(snap.val()) || snap.val().length === 0) {
-            gerarDadosGrafico();
-          }
-        }, { onlyOnce: true });
-      })
-      .catch((error) => {
-        console.error("Erro ao iniciar simulação:", error);
-      });
-  };
+    .then(() => {
+      setSimulacaoId(novoSimulacaoId);
+      setSimulationStarted(true);
+      
+      const graficoRef = ref(database, "sensor/dadosGrafico");
+      onValue(graficoRef, (snap) => {
+        if (!snap.exists() || !Array.isArray(snap.val()) || snap.val().length === 0) {
+          gerarDadosGrafico();
+        }
+      }, { onlyOnce: true });
+      
+      // Configurar um temporizador para desativar o estado de carregamento após 12 segundos
+      setTimeout(() => {
+        setLoadingData(false);
+      }, 12000);
+    })
+    .catch((error) => {
+      console.error("Erro ao iniciar simulação:", error);
+      setLoadingData(false); // Garantir que o carregamento seja desativado em caso de erro
+    });
+};
+
+
+const InfoCard = ({
+  
+  title,
+  value,
+  unit,
+}: {
+  title: string;
+  value: number | null;
+  unit: string;
+}) => (
+  <div className="p-6 bg-white rounded-lg shadow-lg text-center">
+    <h4 className="text-xl font-semibold text-black">{title}</h4>
+    <p className="text-2xl font-bold text-black">
+      {loadingData || value === null ? "Carregando..." : `${value.toFixed(2)} ${unit}`}
+    </p>
+  </div>
+);
 
   const finalizarSimulacao = () => {
     if (!simulationStarted || !simulacaoId) return;
