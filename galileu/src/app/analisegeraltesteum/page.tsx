@@ -682,15 +682,15 @@ const AnaliseSimulacao: React.FC = () => {
                 <h3 className="text-xl font-semibold text-black mb-4">Representação das Forças</h3>
                 <div className="flex justify-center items-center h-96">
                   <ForcasSVG
-                    forcaPeso={forcaPeso ?? 0}
-                    forcaNormal={forcaNormal ?? 0}
-                    forcaAtrito={forcaAtrito ?? 0}
-                    px={px ?? 0}
-                    py={py ?? 0}
-                    forcaResultante={forcaResultante ?? 0}
-                    anguloInicial={30}
-                    anguloFirebase={angulo}
-                  />
+   forcaPeso={forcaPeso !== null ? forcaPeso : 0}
+  forcaNormal={forcaNormal !== null ? forcaNormal : 0}
+  forcaAtrito={forcaAtrito !== null ? forcaAtrito : 0}
+  px={px !== null ? px : 0}
+  py={py !== null ? py : 0}
+  forcaResultante={forcaResultante !== null ? forcaResultante : 0}
+  anguloInicial={30}
+  anguloFirebase={angulo !== null ? angulo : 30}
+  />
                 </div>
               </div>
 

@@ -7,13 +7,11 @@
   "homepage": "https://github.com/jhwrdan109/galileuquasefinal",
   "scripts": {
     "dev": "next dev --turbopack",
-    "predeploy": "npm run build",
-   "deploy": "gh-pages -d build",
-    "build": "next build",
-    
-
+    "predeploy": "set \"CI=false\" && npm run build",
+   "deploy": "gh-pages -d build", 
+    "build": "next build && @netlify/next",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

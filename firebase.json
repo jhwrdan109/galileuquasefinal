@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "galileumudado",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
