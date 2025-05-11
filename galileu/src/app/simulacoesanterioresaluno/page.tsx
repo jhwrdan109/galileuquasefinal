@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
-import { getDatabase, ref, onValue } from "firebase/database";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { getDatabase, ref, onValue, remove } from "firebase/database";
 import { app } from "../../../lib/firebaseConfig";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -35,6 +36,9 @@ const SimulacoesAnterioresAluno: React.FC = () => {
   const [simulacoes, setSimulacoes] = useState<Simulacao[]>([]);
   const [simulacaoSelecionada, setSimulacaoSelecionada] = useState<Simulacao | null>(null);
   const [modalAberto, setModalAberto] = useState(false);
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
+  const [simulacaoParaDeletar, setSimulacaoParaDeletar] = useState<string | null>(null);
+  const [deletando, setDeletando] = useState(false);
   
   // Estados para o modo de comparação
   const [modoComparacao, setModoComparacao] = useState(false);
@@ -136,6 +140,38 @@ const SimulacoesAnterioresAluno: React.FC = () => {
     setSimulacoesSelecionadas([]);
   };
 
+  // Funções para deletar simulação
+  const confirmarDelecao = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Impede que o modal de detalhes seja aberto
+    setSimulacaoParaDeletar(id);
+    setConfirmDeleteModal(true);
+  };
+
+  const deletarSimulacao = async () => {
+    if (!simulacaoParaDeletar) return;
+    
+    setDeletando(true);
+    try {
+      const database = getDatabase(app);
+      const simulacaoRef = ref(database, `simulacoes/${simulacaoParaDeletar}`);
+      await remove(simulacaoRef);
+      
+      // Atualiza o estado removendo a simulação deletada
+      setSimulacoes(simulacoes.filter(sim => sim.id !== simulacaoParaDeletar));
+      fecharModalConfirmacao();
+    } catch (error) {
+      console.error("Erro ao deletar simulação:", error);
+      alert("Ocorreu um erro ao deletar a simulação. Por favor, tente novamente.");
+    } finally {
+      setDeletando(false);
+    }
+  };
+
+  const fecharModalConfirmacao = () => {
+    setConfirmDeleteModal(false);
+    setSimulacaoParaDeletar(null);
+  };
+
   const DetalhesModal = () => {
     if (!simulacaoSelecionada) return null;
     const { timestamp, dados } = simulacaoSelecionada;
@@ -216,7 +252,13 @@ const SimulacoesAnterioresAluno: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center flex justify-center gap-4">
+              <button
+                onClick={() => confirmarDelecao(simulacaoSelecionada.id, new Event('click') as unknown as React.MouseEvent)}
+                className="bg-red-600 text-white px-8 py-3 rounded-md font-bold hover:bg-red-700 transition duration-300 flex items-center gap-2"
+              >
+                <DeleteIcon /> Deletar
+              </button>
               <button
                 onClick={fecharModal}
                 className="bg-purple-600 text-white px-8 py-3 rounded-md font-bold hover:bg-purple-700 transition duration-300"
@@ -350,6 +392,40 @@ const SimulacoesAnterioresAluno: React.FC = () => {
     );
   };
 
+  const ConfirmDeleteModal = () => {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+          <div className="p-6 text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+              <DeleteIcon fontSize="large" className="text-red-600" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Confirmar Exclusão</h3>
+            <p className="text-gray-500 mb-6">
+              Tem certeza que deseja excluir esta simulação? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={fecharModalConfirmacao}
+                className="bg-gray-200 text-gray-800 px-6 py-2 rounded-md font-medium hover:bg-gray-300 transition duration-300"
+                disabled={deletando}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={deletarSimulacao}
+                className="bg-red-600 text-white px-6 py-2 rounded-md font-medium hover:bg-red-700 transition duration-300 flex items-center justify-center"
+                disabled={deletando}
+              >
+                {deletando ? "Excluindo..." : "Sim, excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center text-white text-xl">
@@ -471,7 +547,7 @@ const SimulacoesAnterioresAluno: React.FC = () => {
                   {simulacoes.map((simulacao) => (
                     <div
                       key={simulacao.id}
-                      className={`bg-white p-6 rounded-lg shadow-md hover:bg-purple-50 transition duration-300 cursor-pointer ${
+                      className={`bg-white p-6 rounded-lg shadow-md hover:bg-purple-50 transition duration-300 cursor-pointer relative ${
                         modoComparacao && simulacoesSelecionadas.find(s => s.id === simulacao.id)
                           ? "border-4 border-purple-600"
                           : ""
@@ -482,6 +558,16 @@ const SimulacoesAnterioresAluno: React.FC = () => {
                         Simulação em {formatarData(simulacao.timestamp)}
                       </h2>
                       <p className="text-gray-700">Status: {simulacao.status}</p>
+                      
+                      {!modoComparacao && (
+                        <button
+                          onClick={(e) => confirmarDelecao(simulacao.id, e)}
+                          className="absolute top-4 right-4 text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition-all"
+                          title="Deletar simulação"
+                        >
+                          <DeleteIcon />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -495,6 +581,7 @@ const SimulacoesAnterioresAluno: React.FC = () => {
 
       {modalAberto && <DetalhesModal />}
       {modalComparacaoAberto && <ComparacaoModal />}
+      {confirmDeleteModal && <ConfirmDeleteModal />}
     </div>
   );
 };

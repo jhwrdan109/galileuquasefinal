@@ -1,52 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { getDatabase, ref, onValue } from "firebase/database";
 
-type Props = {
-  aceleracao?: number;
-  anguloInicial?: number;
-};
+type Props = {};
 
-const ForcasSVG: React.FC<Props> = ({ aceleracao = 6.9, anguloInicial = 30 }) => {
+const ForcasSVG: React.FC<Props> = () => {
   const centerX = 150;
   const centerY = 150;
-  const ESCALA = 500; // aumentada para visualização com valores pequenos
+  const ESCALA = 150;
 
-  const [angulo, setAngulo] = useState(anguloInicial);
+  const [angulo, setAngulo] = useState(30);
+  const [aceleracao, setAceleracao] = useState(6.9);
+  const [atritoFirebase, setAtritoFirebase] = useState(0);
+  const [pesoFirebase, setPesoFirebase] = useState<number | null>(null);
+  const [normalFirebase, setNormalFirebase] = useState<number | null>(null);
+  const [pyFirebase, setPyFirebase] = useState<number | null>(null);
+
   const [mostrarPeso, setMostrarPeso] = useState(true);
   const [mostrarNormal, setMostrarNormal] = useState(true);
   const [mostrarAtrito, setMostrarAtrito] = useState(true);
   const [mostrarResultante, setMostrarResultante] = useState(true);
   const [mostrarTodasForcas, setMostrarTodasForcas] = useState(true);
 
-  const massa = 0.01735; // kg
-  const g = 9.8;
-  const coefAtrito = 0.294; // para que Atrito = 0.05N aproximadamente
+  useEffect(() => {
+    const db = getDatabase();
+    const sensorRef = ref(db, "sensor");
+
+    const unsubscribe = onValue(sensorRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        if (data.aceleracao !== undefined) {
+          setAceleracao(Number(data.aceleracao));
+        }
+        if (data.angulo !== undefined) {
+          setAngulo(Number(data.angulo));
+        }
+        if (data.atrito !== undefined) {
+          setAtritoFirebase(Number(data.atrito));
+        }
+        if (data.peso !== undefined) {
+          setPesoFirebase(Number(data.peso));
+        }
+        if (data.normal !== undefined) {
+          setNormalFirebase(Number(data.normal));
+        }
+        if (data.py !== undefined) {
+          setPyFirebase(Number(data.py));
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const rad = (angulo * Math.PI) / 180;
-
-  const forcaPeso = massa * g; // ≈ 0.17 N
-  const componentePesoX = massa * g * Math.sin(rad);
-  const componentePesoY = massa * g * Math.cos(rad);
-
-  const forcaNormal = componentePesoY; // ≈ 0.17 N
-  const forcaAtrito = coefAtrito * forcaNormal; // ≈ 0.05 N
-
   const direcaoAtrito = aceleracao > 0 ? -1 : 1;
+  const forcaResultante = pyFirebase !== null && atritoFirebase !== undefined 
+    ? pyFirebase - atritoFirebase 
+    : 0; // Py - atrito
 
-  const resultanteX = massa * aceleracao * Math.cos(rad);
-  const resultanteY = massa * aceleracao * Math.sin(rad);
+  const forcaPeso = pesoFirebase ?? 0;
+  const forcaNormal = normalFirebase ?? 0;
 
+  // Vetores
   const vetorPesoX = 0;
   const vetorPesoY = ESCALA * forcaPeso;
 
   const vetorNormalX = -ESCALA * forcaNormal * Math.sin(rad);
   const vetorNormalY = -ESCALA * forcaNormal * Math.cos(rad);
 
-  const vetorAtritoX = ESCALA * forcaAtrito * Math.cos(rad) * direcaoAtrito;
-  const vetorAtritoY = ESCALA * forcaAtrito * Math.sin(rad) * direcaoAtrito;
+  const vetorAtritoX = ESCALA * atritoFirebase * Math.cos(rad) * direcaoAtrito;
+  const vetorAtritoY = ESCALA * atritoFirebase * Math.sin(rad) * direcaoAtrito;
 
-  const vetorResultanteX = ESCALA * resultanteX;
-  const vetorResultanteY = ESCALA * resultanteY;
+  const vetorResultanteX = ESCALA * forcaResultante * Math.cos(rad);
+  const vetorResultanteY = ESCALA * forcaResultante * Math.sin(rad);
 
   const desenharVetor = (
     x1: number,
@@ -94,8 +121,8 @@ const ForcasSVG: React.FC<Props> = ({ aceleracao = 6.9, anguloInicial = 30 }) =>
   };
 
   return (
-    <div className="flex flex-col justify-center items-center mt-2">
-      <svg width="320" height="320" viewBox="0 0 350 250">
+    <div className="flex flex-col justify-center items-center mb-2">
+      <svg width="340" height="340" viewBox="0 0 350 250">
         <defs>
           <marker
             id="arrow"
@@ -110,15 +137,12 @@ const ForcasSVG: React.FC<Props> = ({ aceleracao = 6.9, anguloInicial = 30 }) =>
           </marker>
         </defs>
 
-        {/* Aumentando o tamanho do triângulo */}
-        <polygon points="50,230 250,230 250,120" fill="#d3d3d3" /> {/* Ajuste no triângulo */}
-        
-        {/* Aumentando o cubo (quadrado) */}
+        <polygon points="50,230 250,230 250,120" fill="#d3d3d3" />
         <rect
-          x={centerX - 25} // Maior cubo (largura aumentada)
-          y={centerY - 25} // Maior cubo (altura aumentada)
-          width="50" // Maior cubo
-          height="50" // Maior cubo
+          x={centerX - 30}
+          y={centerY - 25}
+          width="50"
+          height="50"
           fill="#8884d8"
           transform={`rotate(${-angulo}, ${centerX}, ${centerY})`}
         />
@@ -134,7 +158,6 @@ const ForcasSVG: React.FC<Props> = ({ aceleracao = 6.9, anguloInicial = 30 }) =>
             10,
             15
           )}
-
         {mostrarNormal &&
           desenharVetor(
             centerX,
@@ -146,7 +169,6 @@ const ForcasSVG: React.FC<Props> = ({ aceleracao = 6.9, anguloInicial = 30 }) =>
             -40,
             0
           )}
-
         {mostrarAtrito &&
           desenharVetor(
             centerX,
@@ -154,11 +176,10 @@ const ForcasSVG: React.FC<Props> = ({ aceleracao = 6.9, anguloInicial = 30 }) =>
             centerX + vetorAtritoX,
             centerY + vetorAtritoY,
             "orange",
-            `Atrito (${forcaAtrito.toFixed(2)} N)`,
+            `Atrito (${atritoFirebase.toFixed(2)} N)`,
             -40,
             10
           )}
-
         {mostrarResultante &&
           desenharVetor(
             centerX,
@@ -166,64 +187,48 @@ const ForcasSVG: React.FC<Props> = ({ aceleracao = 6.9, anguloInicial = 30 }) =>
             centerX + vetorResultanteX,
             centerY + vetorResultanteY,
             "blue",
-            `Resultante (${(massa * aceleracao).toFixed(2)} N)`,
+            `Resultante (${forcaResultante.toFixed(2)} N)`,
             10,
             0
           )}
       </svg>
 
-      <div className="mt-4 w-[200px] px-4">
-        <label htmlFor="anguloSlider" className="text-black font-semibold">
-          Ângulo: {angulo}°
-        </label>
-        <input
-          type="range"
-          id="anguloSlider"
-          min="0"
-          max="90"
-          step="1"
-          value={angulo}
-          onChange={(e) => setAngulo(parseInt(e.target.value))}
-          className="w-full mt-2"
-        />
-      </div>
-
-      <div className="mt-6 space-x-4 flex flex-wrap justify-center">
+     
+      <div className="mt-4 flex flex-wrap gap-2 justify-center py-5">
         <button
           onClick={() => setMostrarPeso(!mostrarPeso)}
-          className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+          className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
         >
           {mostrarPeso ? "Esconder Peso" : "Mostrar Peso"}
         </button>
         <button
           onClick={() => setMostrarNormal(!mostrarNormal)}
-          className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+          className="px-4 py-1 bg-green-500 text-white rounded hover:bg-green-600"
         >
           {mostrarNormal ? "Esconder Normal" : "Mostrar Normal"}
         </button>
         <button
           onClick={() => setMostrarAtrito(!mostrarAtrito)}
-          className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+          className="px-4 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
         >
           {mostrarAtrito ? "Esconder Atrito" : "Mostrar Atrito"}
         </button>
         <button
           onClick={() => setMostrarResultante(!mostrarResultante)}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 py-2"
         >
           {mostrarResultante ? "Esconder Resultante" : "Mostrar Resultante"}
         </button>
       </div>
 
-      <div className="mt-4">
+      <div className="">
         <button
           onClick={alternarTodasForcas}
-          className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+          className="px-4 py-1 mb-12 bg-gray-600 text-white rounded hover:bg-gray-700"
         >
           {mostrarTodasForcas ? "Esconder Todas as Forças" : "Mostrar Todas as Forças"}
         </button>
       </div>
-
     </div>
   );
 };

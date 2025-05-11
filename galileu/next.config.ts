@@ -1,14 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   images: {
+    domains: [
+      'media.discordapp.net',
+      'cdn.discordapp.com',
+      'files.fm'
+    ],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'pvcanhsbbuktocfleuld.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
-      // Adicione outros hostnames de imagem aqui, se necessário
     ],
   },
 };

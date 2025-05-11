@@ -105,16 +105,78 @@ const CriarQuestaoDispositivo = () => {
           onClick={() => setShowModal(true)}
           className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 transition"
         >
-          Tipo / Exemplo
+         Exemplo de como criar
         </button>
       </div>
 
       {/* Modal de ajuda */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
-            <h2 className="text-xl font-bold mb-4">Tipo e Exemplo de Uso</h2>
-            <p className="text-gray-700">Conteúdo a ser definido...</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 text-black">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl max-h-screen overflow-y-auto relative">
+            <h2 className="text-2xl font-bold mb-4 text-purple-800">Como Criar Questões Utilizando Dados do Sensor</h2>
+            
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold mb-2 text-purple-700">Exemplo 1: Tempo de Queda</h3>
+              <p className="mb-2"><strong>Enunciado:</strong> "Um objeto é solto de uma altura de {sensor?.distancia || 'X'} metros em uma superfície inclinada com ângulo de {sensor?.angulo || 'Y'}° em relação à horizontal. Considerando a aceleração da gravidade como {sensor?.aceleracao || 'Z'} m/s², calcule o tempo que o objeto leva para atingir o solo."</p>
+              <p className="mb-2"><strong>Resolução:</strong> Para calcular o tempo de queda em um plano inclinado, usamos a componente da aceleração da gravidade na direção do plano: a = g·sen(θ). Depois aplicamos a equação de movimento: d = (1/2)·a·t². Isolando t, temos: t = √(2d/(g·sen(θ)))</p>
+              <p><strong>Incógnita:</strong> tempo</p>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold mb-2 text-purple-700">Exemplo 2: Distância Percorrida</h3>
+              <p className="mb-2"><strong>Enunciado:</strong> "Um objeto se move com aceleração constante de {sensor?.aceleracao || 'X'} m/s² ao longo de uma rampa com inclinação de {sensor?.angulo || 'Y'}°. Se o movimento durou {sensor?.tempo || 'Z'} segundos, qual foi a distância percorrida pelo objeto?"</p>
+              <p className="mb-2"><strong>Resolução:</strong> Usamos a equação do movimento uniformemente acelerado: d = (1/2)·a·t². Substituindo os valores, encontramos a distância.</p>
+              <p><strong>Incógnita:</strong> distancia</p>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold mb-2 text-purple-700">Exemplo 3: Aceleração Resultante</h3>
+              <p className="mb-2"><strong>Enunciado:</strong> "Um objeto percorre uma distância de {sensor?.distancia || 'X'} metros em uma rampa com inclinação de {sensor?.angulo || 'Y'}° em relação à horizontal durante {sensor?.tempo || 'Z'} segundos, partindo do repouso. Qual é a aceleração do objeto?"</p>
+              <p className="mb-2"><strong>Resolução:</strong> Utilizando a equação do movimento uniformemente acelerado: d = (1/2)·a·t². Isolando a aceleração: a = 2d/t²</p>
+              <p><strong>Incógnita:</strong> aceleracao</p>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold mb-2 text-purple-700">Exemplo 4: Ângulo da Rampa</h3>
+              <p className="mb-2"><strong>Enunciado:</strong> "Um objeto desliza por uma rampa e percorre {sensor?.distancia || 'X'} metros em {sensor?.tempo || 'Y'} segundos, sob uma aceleração de {sensor?.aceleracao || 'Z'} m/s². Qual é o ângulo de inclinação da rampa em relação à horizontal?"</p>
+              <p className="mb-2"><strong>Resolução:</strong> Se a aceleração é constante, podemos comparar com a componente da gravidade na direção do plano inclinado: a = g·sen(θ). Isolando θ: θ = arcsen(a/g)</p>
+              <p><strong>Incógnita:</strong> angulo</p>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold mb-2 text-purple-700">Fórmulas Úteis</h3>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <p className="font-semibold mb-1">Movimento em Plano Inclinado:</p>
+                <ul className="list-disc pl-5 mb-2">
+                  <li>Aceleração ao longo do plano: a = g·sen(θ)</li>
+                  <li>Força normal: N = m·g·cos(θ)</li>
+                  <li>Força de atrito: Fa = μ·N = μ·m·g·cos(θ)</li>
+                  <li>Aceleração com atrito: a = g·sen(θ) - μ·g·cos(θ)</li>
+                </ul>
+                
+                <p className="font-semibold mb-1">Equações do Movimento Uniformemente Acelerado:</p>
+                <ul className="list-disc pl-5 mb-2">
+                  <li>Velocidade final: v = v₀ + a·t</li>
+                  <li>Posição: d = v₀·t + (1/2)·a·t²</li>
+                  <li>Relação velocidade-posição: v² = v₀² + 2·a·d</li>
+                </ul>
+                
+                <p className="font-semibold mb-1">Componentes do Movimento:</p>
+                <ul className="list-disc pl-5">
+                  <li>Componente x da aceleração: ax = a·cos(θ)</li>
+                  <li>Componente y da aceleração: ay = a·sen(θ)</li>
+                  <li>Distância horizontal percorrida: dx = d·cos(θ)</li>
+                  <li>Distância vertical percorrida: dy = d·sen(θ)</li>
+                </ul>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-4 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
+            >
+              Fechar
+            </button>
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-2 right-2 text-gray-600 hover:text-black text-lg"
@@ -143,7 +205,7 @@ const CriarQuestaoDispositivo = () => {
           <div className="flex-1">
             <h3 className="text-2xl font-semibold mb-4">Dados do Sensor</h3>
             {sensor ? (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-6 text-black">
                 {['aceleracao', 'distancia', 'angulo', 'tempo'].map((key) => (
                   <div key={key} className="bg-white p-4 rounded-lg shadow-lg">
                     <h4 className="font-semibold text-lg">{key.charAt(0).toUpperCase() + key.slice(1)}:</h4>
@@ -175,6 +237,9 @@ const CriarQuestaoDispositivo = () => {
               <option value="força normal">Força Normal</option>
               <option value="força de atrito">Força de Atrito</option>
               <option value="aceleração">Aceleração</option>
+              <option value="tempo">Tempo</option>
+              <option value="distancia">Distância</option>
+              <option value="angulo">Ângulo</option>
             </select>
 
             <label className="block text-white font-semibold">Alternativas:</label>

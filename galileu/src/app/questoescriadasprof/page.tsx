@@ -1,14 +1,9 @@
-"use client";
+"use client"
 import React, { useEffect, useState } from "react";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, remove } from "firebase/database";
 import { app } from "../../../lib/firebaseConfig";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeftCircle,
-  Eye,
-  FileText,
-  ClipboardCheck,
-} from "lucide-react";
+import { ArrowLeftCircle, Eye, FileText, ClipboardCheck } from "lucide-react";
 import Image from "next/image";
 
 interface Questao {
@@ -17,10 +12,11 @@ interface Questao {
   alternativas: { [key: string]: string };
   incognita: string;
   alternativaCorreta: string;
-  respostaCorreta?: string;  // Agora temos respostaCorreta para sensor
+  respostaCorreta?: string;
   criadoEm: string;
   professor: string;
   isExpanded?: boolean;
+  id: string; // ID único para cada questão
 }
 
 const QuestoesCriadasProf = () => {
@@ -29,6 +25,7 @@ const QuestoesCriadasProf = () => {
   const [questoesSensores, setQuestoesSensores] = useState<Questao[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
+  const [selectedQuestoes, setSelectedQuestoes] = useState<Set<string>>(new Set()); // Para armazenar IDs das questões selecionadas
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -50,21 +47,24 @@ const QuestoesCriadasProf = () => {
       onValue(questoesRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          const listaQuestoes = Object.values(data) as Questao[];
+          const listaQuestoes = Object.entries(data).map(([key, value]) => ({
+            id: key,
+            ...value,
+          })) as Questao[];
           setQuestoes(listaQuestoes);
         } else {
           setQuestoes([]);
         }
       });
 
-      // Busca as questões com base nos sensores
+      // Busca as questões baseadas em sensores
       const questoesSensoresRef = ref(db, `questoesComBaseNosSensores/${userId}`);
       onValue(questoesSensoresRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          const listaQuestoesSensores = Object.values(data).map((questao: any) => ({
-            ...questao,
-            respostaCorreta: questao.respostaCorreta,  // Agora inclui respostaCorreta
+          const listaQuestoesSensores = Object.entries(data).map(([key, value]) => ({
+            id: key,
+            ...value,
           })) as Questao[];
           setQuestoesSensores(listaQuestoesSensores);
         } else {
@@ -87,16 +87,46 @@ const QuestoesCriadasProf = () => {
     }
   };
 
+  // Função para alternar a seleção de questões
+  const alternarSelecao = (id: string) => {
+    const novaSelecao = new Set(selectedQuestoes);
+    if (novaSelecao.has(id)) {
+      novaSelecao.delete(id);
+    } else {
+      novaSelecao.add(id);
+    }
+    setSelectedQuestoes(novaSelecao);
+  };
+
+  // Função para excluir questões selecionadas
+  const excluirQuestoesSelecionadas = async () => {
+    const db = getDatabase(app);
+
+    // Excluir as questões normais selecionadas
+    for (const id of selectedQuestoes) {
+      const questaoRef = ref(db, `questoes/${userId}/${id}`);
+      await remove(questaoRef);
+    }
+
+    // Excluir as questões baseadas em sensores selecionadas
+    for (const id of selectedQuestoes) {
+      const questaoRef = ref(db, `questoesComBaseNosSensores/${userId}/${id}`);
+      await remove(questaoRef);
+    }
+
+    // Atualizar o estado local após exclusão
+    setQuestoes((prev) => prev.filter((questao) => !selectedQuestoes.has(questao.id)));
+    setQuestoesSensores((prev) => prev.filter((questao) => !selectedQuestoes.has(questao.id)));
+    setSelectedQuestoes(new Set()); // Limpar a seleção
+  };
+
   return (
-    <div
-      className="min-h-screen bg-cover bg-center text-white"
-      style={{
-        backgroundImage: "url('/images/FundoCanva.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <div className="min-h-screen bg-cover bg-center text-white" style={{
+      backgroundImage: "url('/images/FundoCanva.png')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundAttachment: "fixed",
+    }}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-center mb-16">
@@ -112,35 +142,14 @@ const QuestoesCriadasProf = () => {
 
           <nav>
             <ul className="flex flex-wrap justify-center gap-6">
-              <li>
-                <button
-                  onClick={() => router.push("/dashboardprof")}
-                  className="text-white hover:text-purple-300 px-6 py-3 rounded-md transition duration-300"
-                >
-                  Início
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => router.push("/simuproftestesupabase")}
-                  className="text-white hover:text-purple-300 px-6 py-3 rounded-md transition duration-300"
-                >
-                  Simulações
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => router.push("/editarperfilprof")}
-                  className="bg-purple-600 text-white px-8 py-3 rounded-md font-bold transition duration-300"
-                >
-                  {userName}
-                </button>
-              </li>
+              <li><button onClick={() => router.push("/dashboardprof")} className="text-white hover:text-purple-300 px-6 py-3 rounded-md transition duration-300">Início</button></li>
+              <li><button onClick={() => router.push("/simuproftestesupabase")} className="text-white hover:text-purple-300 px-6 py-3 rounded-md transition duration-300">Simulações</button></li>
+              <li><button onClick={() => router.push("/editarperfilprof")} className="bg-purple-600 text-white px-8 py-3 rounded-md font-bold transition duration-300">{userName}</button></li>
             </ul>
           </nav>
         </header>
 
-        {/* Container */}
+        {/* Main Content */}
         <main className="relative bg-purple-900 bg-opacity-40 p-6 rounded-2xl shadow-xl mb-10">
           {/* Back Button */}
           <button
@@ -152,24 +161,35 @@ const QuestoesCriadasProf = () => {
 
           <h1 className="text-3xl font-bold mb-6 text-center">Questões Criadas</h1>
 
+          {/* Botão de Deletar Questões Selecionadas */}
+          {selectedQuestoes.size > 0 && (
+            <button
+              onClick={excluirQuestoesSelecionadas}
+              className="mb-6 bg-red-600 text-white px-6 py-3 rounded-md font-bold transition duration-300 hover:bg-red-700"
+            >
+              Deletar Questões Selecionadas
+            </button>
+          )}
+
           {questoes.length === 0 && questoesSensores.length === 0 ? (
             <p className="text-gray-400 text-center">Nenhuma questão criada ainda.</p>
           ) : (
             <>
-              {/* Container de Questões Normais */}
+              {/* Questões Normais */}
               <div>
                 <h2 className="text-xl font-semibold mb-4">Questões Normais</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {questoes.map((questao, index) => (
-                    <div
-                      key={index}
-                      className="bg-purple-800 p-4 rounded-lg shadow-md flex flex-col justify-between"
-                    >
+                    <div key={questao.id} className="bg-purple-800 p-4 rounded-lg shadow-md flex flex-col justify-between">
+                      <input
+                        type="checkbox"
+                        className="mb-2"
+                        onChange={() => alternarSelecao(questao.id)}
+                        checked={selectedQuestoes.has(questao.id)}
+                      />
                       <h2 className="text-lg font-semibold mb-2">
                         <FileText className="inline mr-2" />
-                        {questao.enunciado.length > 60
-                          ? questao.enunciado.slice(0, 60) + "..."
-                          : questao.enunciado}
+                        {questao.enunciado.length > 60 ? questao.enunciado.slice(0, 60) + "..." : questao.enunciado}
                       </h2>
                       <button
                         onClick={() => alternarDetalhes(index, "normal")}
@@ -187,7 +207,6 @@ const QuestoesCriadasProf = () => {
                             ))}
                           </ul>
                           <p><strong>Alternativa Correta:</strong> {questao.alternativaCorreta}</p>
-                         
                           <p><strong>Criado em:</strong> {new Date(questao.criadoEm).toLocaleString()}</p>
                           <p><strong>Professor:</strong> {questao.professor}</p>
                         </div>
@@ -197,20 +216,21 @@ const QuestoesCriadasProf = () => {
                 </div>
               </div>
 
-              {/* Container de Questões Baseadas em Sensores */}
-              <div className="mt-10">
-                <h2 className="text-xl font-semibold mb-4">Questões Baseadas em Sensores</h2>
+              {/* Questões com Sensores */}
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Questões com Base nos Sensores</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {questoesSensores.map((questao, index) => (
-                    <div
-                      key={index}
-                      className="bg-purple-800 p-4 rounded-lg shadow-md flex flex-col justify-between"
-                    >
+                    <div key={questao.id} className="bg-purple-800 p-4 rounded-lg shadow-md flex flex-col justify-between">
+                      <input
+                        type="checkbox"
+                        className="mb-2"
+                        onChange={() => alternarSelecao(questao.id)}
+                        checked={selectedQuestoes.has(questao.id)}
+                      />
                       <h2 className="text-lg font-semibold mb-2">
-                        <FileText className="inline mr-2" />
-                        {questao.enunciado.length > 60
-                          ? questao.enunciado.slice(0, 60) + "..."
-                          : questao.enunciado}
+                        <ClipboardCheck className="inline mr-2" />
+                        {questao.enunciado.length > 60 ? questao.enunciado.slice(0, 60) + "..." : questao.enunciado}
                       </h2>
                       <button
                         onClick={() => alternarDetalhes(index, "sensor")}
@@ -227,8 +247,7 @@ const QuestoesCriadasProf = () => {
                               <li key={key}>{key} - {value}</li>
                             ))}
                           </ul>
-                          <p><strong>Alternativa Correta:</strong> {questao.respostaCorreta}</p> {/* Usando respostaCorreta aqui */}
-                          <p><strong>Incógnita:</strong> {questao.incognita}</p>
+                          <p><strong>Alternativa Correta:</strong> {questao.alternativaCorreta}</p>
                           <p><strong>Criado em:</strong> {new Date(questao.criadoEm).toLocaleString()}</p>
                           <p><strong>Professor:</strong> {questao.professor}</p>
                         </div>
