@@ -10,23 +10,27 @@ const Dashboardaluno: React.FC = () => {
   const [showTutorial, setShowTutorial] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   const quemSomosRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const tutorialSteps = [
     {
       title: "Bem-vindo ao Projeto Galileu",
       description: "Vamos te mostrar como entrar na sala e ver simulações anteriores.",
-      image:
+      isGif: true,
+      media:
       "https://media.discordapp.net/attachments/1362902994634408210/1370850653957787709/Sharing_my_pixel_art1.gif?ex=6820ffa9&is=681fae29&hm=379863f3c50bb2a9deb4e9d363c3f4a7d97523309ef98d9b4dc3550b68da1b0b&=&width=640&height=640"
     },
     {
       title: "Entrando na sala virtual",
       description: "Clique no botão 'Simulações' no menu superior, após isso, clique em 'Entrar na simulação', espere o código ser gerado pelo professor e colie-o nessa página.",
-      image: "https://files.fm/u/bastyb2tw9?k=5a340abe",
+      isGif: false,
+      media: "/images/entrarnasala.mp4",
     },
     {
       title: "Visualizando Simulações Anteriores",
       description: "Na página de simulações, você pode acessar simulações anteriores clicando no botão de mesmo nome, nessa página você pode ver dados de análises que já ocorreram e até compará-las.",
-      image: "/images/tutorial-step3.png",
+      isGif: false,
+      media: "/images/simulacaoanterior.mp4",
     },
   ];
 
@@ -41,6 +45,13 @@ const Dashboardaluno: React.FC = () => {
       router.push("/login");
     }
   }, [router]);
+
+  useEffect(() => {
+    // Pausar o vídeo anterior ao mudar de passo
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+  }, [currentStep]);
 
   const scrollToQuemSomos = () => {
     quemSomosRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -100,13 +111,26 @@ const Dashboardaluno: React.FC = () => {
               <h3 className="text-xl font-bold mb-4">{tutorialSteps[currentStep].title}</h3>
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="md:w-1/2 mb-4 md:mb-0 relative h-64 bg-black bg-opacity-20 rounded-lg p-2 flex items-center justify-center">
-                  <Image
-                    src={tutorialSteps[currentStep].image}
-                    alt={`Tutorial passo ${currentStep + 1}`}
-                    layout="fill"
-                    objectFit="contain"
-                    className="rounded-md"
-                  />
+                  {tutorialSteps[currentStep].isGif ? (
+                    <Image
+                      src={tutorialSteps[currentStep].media}
+                      alt={`Tutorial passo ${currentStep + 1}`}
+                      layout="fill"
+                      objectFit="contain"
+                      className="rounded-md"
+                    />
+                  ) : (
+                    <video
+                      ref={videoRef}
+                      src={tutorialSteps[currentStep].media}
+                      className="w-full h-full rounded-md object-contain"
+                      controls
+                      autoPlay
+                      preload="metadata"
+                    >
+                      Seu navegador não suporta vídeos HTML5.
+                    </video>
+                  )}
                 </div>
                 <div className="md:w-1/2">
                   <p className="text-lg mb-4">{tutorialSteps[currentStep].description}</p>

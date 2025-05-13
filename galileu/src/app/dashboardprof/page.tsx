@@ -109,14 +109,16 @@ const Dashboardprof: React.FC = () => {
                 
                 <div className="mt-8 mb-8">
                   <h4 className="text-xl font-semibold mb-4">Vídeo Demonstrativo</h4>
-                  <div className="bg-black bg-opacity-50 rounded-lg p-4 flex items-center justify-center h-72">
-                    {/* Aqui você pode adicionar seu vídeo depois */}
-                    <div className="text-center">
-                      <p className="text-lg mb-2">Vídeo demonstrativo será exibido aqui</p>
-                      <p className="text-sm text-gray-300">
-                        (Substitua este placeholder pelo seu vídeo de demonstração)
-                      </p>
-                    </div>
+                  <div className="bg-black bg-opacity-50 rounded-lg p-4 flex items-center justify-center">
+                    <video 
+                      ref={videoRef}
+                      className="w-full max-w-3xl rounded-lg shadow-lg" 
+                      controls
+                      src="/images/gabrielTutorial.mp4"
+                      preload="metadata"
+                    >
+                      Seu navegador não suporta vídeos HTML5.
+                    </video>
                   </div>
                 </div>
                 
@@ -158,28 +160,16 @@ const Dashboardprof: React.FC = () => {
                 </div>
                 
                 <div className="mt-8 mb-8">
-                  <h4 className="text-xl font-semibold mb-4">Imagem Demonstrativa</h4>
-                  <div className="bg-black bg-opacity-50 rounded-lg p-4 flex items-center justify-center h-64">
-                    {/* Placeholder para a imagem */}
-                    <div className="text-center">
-                      <p className="text-lg mb-2">Imagem demonstrativa será exibida aqui</p>
-                      <p className="text-sm text-gray-300">
-                        (Substitua este placeholder pela imagem de demonstração)
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-8 mb-8">
                   <h4 className="text-xl font-semibold mb-4">Vídeo Tutorial</h4>
-                  <div className="bg-black bg-opacity-50 rounded-lg p-4 flex items-center justify-center h-72">
-                    {/* Placeholder para o vídeo */}
-                    <div className="text-center">
-                      <p className="text-lg mb-2">Vídeo tutorial será exibido aqui</p>
-                      <p className="text-sm text-gray-300">
-                        (Substitua este placeholder pelo vídeo de tutorial)
-                      </p>
-                    </div>
+                  <div className="bg-black bg-opacity-50 rounded-lg p-4 flex items-center justify-center">
+                    <video 
+                      className="w-full max-w-3xl rounded-lg shadow-lg" 
+                      controls
+                      src="/images/criarsala.mp4"
+                      preload="metadata"
+                    >
+                      Seu navegador não suporta vídeos HTML5.
+                    </video>
                   </div>
                 </div>
                 

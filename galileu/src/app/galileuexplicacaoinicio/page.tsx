@@ -112,7 +112,7 @@ const GalileuExplicacaoModal = () => {
       <div className="bg-purple-900 border-2 border-purple-300 rounded-xl p-6 max-w-3xl w-full mx-4 relative">
         <div className="flex items-center mb-6">
           <img 
-            src="https://media.discordapp.net/attachments/1362902994634408210/1370851417639616602/galileu_boca_3.gif?ex=6821005f&is=681faedf&hm=45b13f2665289ac9e30619849675f5d3a2540f7e8b034f7878ce390f2e3f1ba9&=&width=640&height=640" 
+            src="images/blxck.gif" 
             alt="Galileu explicando" 
             className="w-24 rounded-full mr-4"
           />

@@ -239,10 +239,7 @@ const SimulacoesAnterioresAluno: React.FC = () => {
                     <span className="font-semibold">Força de Atrito:</span>{" "}
                     {dados?.forcaAtrito?.toFixed(2) || "N/A"} N
                   </p>
-                  <p>
-                    <span className="font-semibold">Força Resultante:</span>{" "}
-                    {dados?.forcaResultante?.toFixed(2) || "N/A"} N
-                  </p>
+                 
                   <p>
                     <span className="font-semibold">Px / Py:</span>{" "}
                     {dados?.px?.toFixed(2) || "N/A"} /{" "}

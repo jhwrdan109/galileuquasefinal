@@ -178,7 +178,7 @@ const ExplicacaoGalileu: React.FC<{
       <div className="flex flex-col md:flex-row">
         <div className="md:w-1/3 flex flex-col items-center justify-center p-4">
           <img 
-            src="https://media.discordapp.net/attachments/1362902994634408210/1370849912949964900/galileu_boca_2.gif?ex=6820fef8&is=681fad78&hm=fe85d17e1ce3a99de86013aa7439e14a709e2af2c68d291a5c0019a9f40c952e&=&width=640&height=640" 
+            src="images/galileumexendo.gif" 
             alt="Galileu explicando" 
             className="w-48 h-48 rounded-full mb-4"
           />
