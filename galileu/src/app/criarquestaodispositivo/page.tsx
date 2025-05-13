@@ -94,7 +94,7 @@ const CriarQuestaoDispositivo = () => {
     <div
       className="min-h-screen bg-cover bg-center relative"
       style={{
-        backgroundImage: "url('/images/FundoCanva.png')",
+        backgroundImage: "url('/images/kokushibo.png')",
         backgroundAttachment: 'fixed',
       }}
     >

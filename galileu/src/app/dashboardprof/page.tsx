@@ -47,7 +47,7 @@ const Dashboardprof: React.FC = () => {
     <div
       className="min-h-screen bg-cover bg-center"
       style={{
-        backgroundImage: "url('/images/FundoCanva.png')",
+        backgroundImage: "url('/images/kokushibo.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
@@ -55,8 +55,8 @@ const Dashboardprof: React.FC = () => {
     >
       {/* Tutorial Modal */}
       {showTutorial && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-80">
-          <div className="bg-gradient-to-br from-purple-800 to-purple-900 rounded-lg shadow-2xl w-full max-w-5xl p-8 text-white mx-4 overflow-y-auto max-h-screen">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-80 ">
+          <div className=" border border-purple-300 bg-gradient-to-br from-purple-800 to-purple-900 rounded-lg shadow-2xl w-full max-w-5xl p-8 text-white mx-4 overflow-y-auto max-h-screen">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-bold">
                 {tutorialType === "fisica" ? "Tutorial - Simulação Física" : "Tutorial - Como Criar Sala"}

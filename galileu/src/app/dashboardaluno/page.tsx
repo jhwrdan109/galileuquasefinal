@@ -76,7 +76,7 @@ const Dashboardaluno: React.FC = () => {
     <div
       className="min-h-screen bg-cover bg-center"
       style={{
-        backgroundImage: "url('/images/FundoCanva.png')",
+        backgroundImage: "url('/images/kokushibo.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",

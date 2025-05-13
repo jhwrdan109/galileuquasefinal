@@ -27,7 +27,7 @@ const SimulacoesProf: React.FC = () => {
     <div
       className="min-h-screen bg-cover bg-center relative"
       style={{
-        backgroundImage: "url('/images/FundoCanva.png')",
+        backgroundImage: "url('/images/kokushibo.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
@@ -96,6 +96,7 @@ const SimulacoesProf: React.FC = () => {
             >
               <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#e3e3e3"><path d="M480-144 216-276v-240L48-600l432-216 432 216v312h-72v-276l-96 48v240L480-144Zm0-321 271-135-271-135-271 135 271 135Zm0 240 192-96v-159l-192 96-192-96v159l192 96Zm0-240Zm0 81Zm0 0Z"/></svg>Criar Nova Sala de Aula
             </button>
+            
           <button
   onClick={() => router.push("/escolhacriadasoucriarprof")}
   className="bg-purple-900 text-white px-6 py-3 rounded-md font-bold flex items-center justify-center gap-2 text-lg shadow-md hover:bg-purple-950 transition duration-300"

@@ -66,7 +66,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="h-screen w-screen flex items-center justify-start bg-cover bg-center fixed top-0 left-0"
-      style={{ backgroundImage: "url('/images/FundoCanva.png')", backgroundSize: "cover", backgroundAttachment: "fixed" }}>
+      style={{ backgroundImage: "url('/images/kokushibo.png')", backgroundSize: "cover", backgroundAttachment: "fixed" }}>
 
       <ArrowBackIcon className="absolute top-4 left-4 text-white cursor-pointer hover:scale-110 transition"
         fontSize="large" onClick={() => router.push("/")} />

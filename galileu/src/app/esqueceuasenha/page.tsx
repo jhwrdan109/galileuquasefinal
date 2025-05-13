@@ -30,7 +30,7 @@ const EsqueceuSenha: React.FC = () => {
     <div
       className="h-screen w-screen flex items-center justify-end bg-cover bg-center relative"
       style={{
-        backgroundImage: "url('/images/FundoCanva.png')",
+        backgroundImage: "url('/images/kokushibo.png')",
         backgroundSize: "cover",
       }}
     >

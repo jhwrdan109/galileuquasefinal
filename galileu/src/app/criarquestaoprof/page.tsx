@@ -4,9 +4,9 @@ import { supabase } from '../../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { database } from '../../../lib/firebaseConfig';
-import { ref, set } from 'firebase/database';
+import { ref, set, onValue } from 'firebase/database';
 import { ArrowLeft, Paperclip } from 'lucide-react';
-import { Clock, XCircle } from 'lucide-react';
+import { Clock, XCircle, RadialGauge, Ruler } from 'lucide-react';
 
 const CriarQuestao = () => {
   const [enunciado, setEnunciado] = useState('');
@@ -22,6 +22,11 @@ const CriarQuestao = () => {
   const [loading, setLoading] = useState(true);
   const [mostrarModalTempo, setMostrarModalTempo] = useState(false);
   const [alternativaCorreta, setAlternativaCorreta] = useState('');
+  const [sensorData, setSensorData] = useState({
+    distancia: 0,
+    angulo: 0,
+    ultimaAtualizacao: null
+  });
   const [erros, setErros] = useState({
     enunciado: '',
     resolucao: '',
@@ -42,6 +47,24 @@ const CriarQuestao = () => {
       router.push("/login");
     }
   }, [router]);
+
+  // Carregar dados do sensor do Firebase
+  useEffect(() => {
+    const sensorRef = ref(database, 'sensor/');
+    const unsubscribe = onValue(sensorRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setSensorData({
+          distancia: data.distancia || 0,
+          angulo: data.angulo || 0,
+          ultimaAtualizacao: new Date().toLocaleString()
+        });
+      }
+    });
+
+    // Cleanup listener on component unmount
+    return () => unsubscribe();
+  }, []);
 
   // Quando o componente é montado, se alternativas tiver valor, preenche o array de visualização
   useEffect(() => {
@@ -86,6 +109,12 @@ const CriarQuestao = () => {
   const handleRemoveImage = () => {
     setAnexo(null);
     setImageUrl(null);
+  };
+
+  const handleUseSensorData = () => {
+    // Usando os dados do sensor para preencher ou complementar o enunciado
+    const novoEnunciado = `${enunciado}\n\nDados do sensor: Distância: ${sensorData.distancia}m, Ângulo: ${sensorData.angulo}°`;
+    setEnunciado(novoEnunciado);
   };
 
   const handleSalvarQuestao = async () => {
@@ -148,6 +177,11 @@ const CriarQuestao = () => {
       professorId: userId,
       tempo: tempoTotal,
       anexo: anexoUrl,
+      sensorData: {
+        distancia: sensorData.distancia,
+        angulo: sensorData.angulo,
+        dataLeitura: sensorData.ultimaAtualizacao
+      }
     };
 
     try {
@@ -176,14 +210,14 @@ const CriarQuestao = () => {
     <div
       className="min-h-screen bg-cover bg-center relative"
       style={{
-        backgroundImage: "url('/images/FundoCanva.png')",
+        backgroundImage: "url('/images/kokushibo.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
       }}
     >
       {/* Imagem fixa na esquerda */}
-      <div className="hidden md:block fixed left-0 bottom-0 z-10">
+      <div className="hidden md:block fixed right-0 bottom-0 z-10">
         <Image
           src="/images/galileufrente.png"
           alt="Galileu"
@@ -213,14 +247,7 @@ const CriarQuestao = () => {
                   Início
                 </button>
               </li>
-              <li>
-                <button
-                  onClick={() => router.push('/quemsomosprof')}
-                  className="text-white hover:text-purple-300 px-6 py-3 rounded-md transition duration-300"
-                >
-                  Quem Somos
-                </button>
-              </li>
+             
               <li>
                 <button
                   onClick={() => router.push('/simuproftestesupabase')}
@@ -240,8 +267,9 @@ const CriarQuestao = () => {
             </ul>
           </nav>
         </header>
-        <div className="flex items-center justify-center h-full">
-          <div className="bg-purple-950 ml-40 p-4 rounded-lg shadow-lg border border-purple-300 max-w-7xl w-full text-center relative">
+        <div className="flex flex-col md:flex-row items-start justify-center gap-6">
+          {/* Container principal para criar questão */}
+          <div className="bg-purple-900 p-4 rounded-lg shadow-lg border border-purple-300 w-full md:w-2/3 text-center relative">
             <button
               onClick={() => router.push("/escolhacriadasoucriarprof")}
               className="absolute top-4 left-4 text-white hover:text-purple-300 transition duration-300"
@@ -257,6 +285,7 @@ const CriarQuestao = () => {
                   className={`w-full p-2 border rounded text-black ${erros.enunciado ? 'border-red-500' : ''}`}
                   value={enunciado}
                   onChange={(e) => setEnunciado(e.target.value)}
+                  rows={5}
                 />
                 {erros.enunciado && <p className="text-red-500 text-sm">{erros.enunciado}</p>}
               </div>
@@ -266,6 +295,7 @@ const CriarQuestao = () => {
                   className={`w-full p-2 border rounded text-black ${erros.resolucao ? 'border-red-500' : ''}`}
                   value={resolucao}
                   onChange={(e) => setResolucao(e.target.value)}
+                  rows={5}
                 />
                 {erros.resolucao && <p className="text-red-500 text-sm">{erros.resolucao}</p>}
               </div>
@@ -288,7 +318,6 @@ const CriarQuestao = () => {
               </div>
               
               <div className="mb-4">
-              
                 {erros.incognita && <p className="text-red-500 text-sm">{erros.incognita}</p>}
               </div>
               <div className="mb-4">
@@ -405,6 +434,39 @@ const CriarQuestao = () => {
                 </button>
               </div>
             </form>
+          </div>
+
+          {/* Container dos cards de sensores */}
+          <div className="w-full md:w-1/3 flex flex-col gap-4">
+            {/* Card de Distância */}
+            <div className="bg-purple-900 p-4 rounded-lg shadow-lg border border-purple-300 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Ruler size={24} className="text-purple-300 mr-2" />
+                <h2 className="text-xl font-bold">Sensor de Distância</h2>
+              </div>
+              <div className="bg-purple-800 rounded-lg p-6 flex items-center justify-center">
+                <span className="text-4xl font-bold text-white">{sensorData.distancia.toFixed(2)} cm</span>
+              </div>
+              <p className="text-sm mt-2 text-purple-200">
+                Última atualização: {sensorData.ultimaAtualizacao || 'Indisponível'}
+              </p>
+            </div>
+            
+            {/* Card de Ângulo */}
+            <div className="bg-purple-900 p-4 rounded-lg shadow-lg border border-purple-300 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Clock size={24} className="text-purple-300 mr-2" />
+                <h2 className="text-xl font-bold">Sensor de Ângulo</h2>
+              </div>
+              <div className="bg-purple-800 rounded-lg p-6 flex items-center justify-center">
+                <span className="text-4xl font-bold text-white">{sensorData.angulo.toFixed(2)}°</span>
+              </div>
+              <p className="text-sm mt-2 text-purple-200">
+                Última atualização: {sensorData.ultimaAtualizacao || 'Indisponível'}
+              </p>
+            </div>
+            
+            
           </div>
         </div>
       </div>

@@ -40,7 +40,7 @@ const SalaDeAula = () => {
     <div
       className="min-h-screen bg-cover bg-center relative"
       style={{
-        backgroundImage: "url('/images/FundoCanva.png')",
+        backgroundImage: "url('/images/kokushibo.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",

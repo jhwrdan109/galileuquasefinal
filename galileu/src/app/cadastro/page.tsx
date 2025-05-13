@@ -79,7 +79,7 @@ const Cadastro: React.FC = () => {
     <div
       className="min-h-screen w-screen flex items-center justify-start bg-cover bg-center p-6 overflow-y-auto"
       style={{
-        backgroundImage: "url('/images/FundoCanva.png')",
+        backgroundImage: "url('/images/kokushibo.png')",
         backgroundSize: "cover",
         backgroundAttachment: "fixed",
       }}
